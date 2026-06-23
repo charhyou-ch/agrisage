@@ -1,0 +1,1088 @@
+openapi: 3.0.3
+
+info:
+  title: AgriSage API
+  version: 1.0.0
+  description: |
+    API de conseil phytosanitaire pour l'agriculture marocaine.
+    
+    Croise automatiquement l'index phyto ONSSA, les groupes de résistance IRAC/FRAC/HRAC,
+    les LMR export UE (Règlement 396/2005), les effets sur la faune utile (abeilles, auxiliaires)
+    et le référentiel GlobalGAP v6 pour générer des conseils conformes et traçables.
+    
+    **Base URL** : `https://api.agrisage.ma/v1`
+    
+    **Plans disponibles** : Starter · Growth · Pro · Scale · Entreprise
+    
+    **Langues** : Français (`fr`) · Arabe standard (`ar`)
+  contact:
+    name: Équipe AgriSage
+    email: api@agrisage.ma
+    url: https://docs.agrisage.ma
+  license:
+    name: Propriétaire — usage soumis aux CGU AgriSage
+    url: https://agrisage.ma/cgu
+  x-logo:
+    url: https://agrisage.ma/assets/logo.svg
+
+servers:
+  - url: https://api.agrisage.ma/v1
+    description: Production
+  - url: https://api-sandbox.agrisage.ma/v1
+    description: Sandbox (données fictives, quota illimité)
+
+tags:
+  - name: Conseil
+    description: Génération de conseils phytosanitaires
+  - name: Produits
+    description: Index phytosanitaire ONSSA
+  - name: Traçabilité
+    description: Carnet de traitements & conformité GlobalGAP
+  - name: Référentiels
+    description: Groupes IRAC / FRAC / HRAC
+  - name: Alertes
+    description: Notifications DAR, retraits ONSSA, LMR
+
+# ─────────────────────────────────────────────
+# SECURITY
+# ─────────────────────────────────────────────
+security:
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Clé API AgriSage. Préfixes :
+        - `as_test_` : environnement sandbox
+        - `as_live_` : production
+
+  # ── SCHEMAS ─────────────────────────────────
+  schemas:
+
+    # Dose
+    Dose:
+      type: object
+      required: [valeur, unite]
+      properties:
+        valeur:
+          type: number
+          format: float
+          example: 0.8
+        unite:
+          type: string
+          enum: [kg/ha, L/ha, g/ha, mL/ha, g/plant, mL/plant]
+          example: kg/ha
+
+    # Risque abeilles
+    RisqueAbeilles:
+      type: string
+      enum: [très faible, faible, modéré, élevé]
+      description: |
+        Niveau de toxicité du produit pour les abeilles et pollinisateurs.
+        - `très faible` : aucune précaution particulière
+        - `faible` : appliquer de préférence le matin ou le soir
+        - `modéré` : éviter l'application en période de floraison
+        - `élevé` : application interdite en floraison ou présence de ruches
+
+    # Alternative de rotation
+    AlternativeProduit:
+      type: object
+      properties:
+        produit:
+          type: string
+          example: Scala SC
+        matiere_active:
+          type: string
+          example: pyrimethanil
+        groupe_frac:
+          type: string
+          example: "9"
+        dar:
+          type: integer
+          example: 3
+        dose:
+          $ref: '#/components/schemas/Dose'
+
+    # Conseil phytosanitaire (réponse principale)
+    Conseil:
+      type: object
+      properties:
+        conseil_id:
+          type: string
+          description: Identifiant unique du conseil généré
+          example: c_8f2a1d3e
+        produit:
+          type: string
+          description: Nom commercial du produit recommandé
+          example: Switch 62.5 WG
+        matiere_active:
+          type: string
+          description: Matière(s) active(s) du produit
+          example: cyprodinil + fludioxonil
+        numero_amm:
+          type: string
+          description: Numéro d'homologation ONSSA
+          example: MA-2018-0042
+        dose:
+          $ref: '#/components/schemas/Dose'
+        dar:
+          type: integer
+          description: Délai Avant Récolte en jours
+          example: 3
+        volume_bouillie:
+          type: string
+          description: Volume de bouillie recommandé
+          example: 400-600 L/ha
+        groupe_frac:
+          type: string
+          description: Groupe(s) FRAC (fongicides) — null si non applicable
+          example: "9 + 12"
+          nullable: true
+        groupe_irac:
+          type: string
+          description: Groupe(s) IRAC (insecticides) — null si non applicable
+          example: "28"
+          nullable: true
+        groupe_hrac:
+          type: string
+          description: Groupe(s) HRAC (herbicides) — null si non applicable
+          example: "B"
+          nullable: true
+        homologue_onssa:
+          type: boolean
+          description: Toujours true dans les réponses 200
+          example: true
+        conforme_globalgap:
+          type: boolean
+          example: true
+        lmr_ue_respectee:
+          type: boolean
+          description: LMR Règlement UE 396/2005 respectée — null si export_ue non demandé
+          example: true
+          nullable: true
+        risque_abeilles:
+          $ref: '#/components/schemas/RisqueAbeilles'
+        risque_auxiliaires:
+          type: string
+          enum: [faible, modéré, élevé]
+          description: Toxicité pour les insectes auxiliaires (prédateurs, parasitoïdes)
+          example: faible
+        alertes:
+          type: array
+          items:
+            type: string
+          description: Avertissements actifs (résistance, ZNT, floraison, etc.)
+          example:
+            - "Stade floraison détecté : appliquer après 19h pour limiter l'exposition des abeilles"
+        alternatives:
+          type: array
+          items:
+            $ref: '#/components/schemas/AlternativeProduit'
+          description: Produits alternatifs recommandés pour la rotation des modes d'action
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-03-15T10:42:00Z"
+
+    # Produit ONSSA
+    ProduitONSSA:
+      type: object
+      properties:
+        id:
+          type: string
+          example: prod_onssa_00412
+        nom_commercial:
+          type: string
+          example: Switch 62.5 WG
+        titulaire:
+          type: string
+          example: Syngenta Maroc
+        numero_amm:
+          type: string
+          example: MA-2018-0042
+        matieres_actives:
+          type: array
+          items:
+            type: object
+            properties:
+              nom:
+                type: string
+                example: cyprodinil
+              teneur:
+                type: string
+                example: 37.5%
+        formulation:
+          type: string
+          example: WG (granulé à disperser dans l'eau)
+        usage:
+          type: string
+          enum: [fongicide, insecticide, herbicide, nematicide, acaricide, molluscicide]
+          example: fongicide
+        cultures_homologuees:
+          type: array
+          items:
+            type: string
+          example: [tomate, poivron, vigne, fraisier]
+        dar:
+          type: integer
+          example: 3
+        statut:
+          type: string
+          enum: [homologué, retiré, suspendu]
+          example: homologué
+        date_homologation:
+          type: string
+          format: date
+          example: "2018-06-15"
+        date_expiration:
+          type: string
+          format: date
+          example: "2028-06-14"
+
+    # Traitement enregistré
+    TraitementInput:
+      type: object
+      required: [parcelle_id, produit_nom, dose_appliquee, date_traitement]
+      properties:
+        conseil_id:
+          type: string
+          description: ID du conseil AgriSage ayant guidé ce traitement (optionnel)
+          example: c_8f2a1d3e
+        parcelle_id:
+          type: string
+          description: Identifiant de la parcelle dans votre système
+          example: parcelle_nord_003
+        culture:
+          type: string
+          example: tomate
+        produit_nom:
+          type: string
+          example: Switch 62.5 WG
+        numero_amm:
+          type: string
+          example: MA-2018-0042
+        dose_appliquee:
+          $ref: '#/components/schemas/Dose'
+        surface_traitee:
+          type: number
+          description: Surface traitée en hectares
+          example: 2.5
+        date_traitement:
+          type: string
+          format: date
+          example: "2025-03-15"
+        date_recolte_prevue:
+          type: string
+          format: date
+          description: Déclenche une alerte automatique si DAR risque d'être dépassé
+          example: "2025-03-25"
+        operateur:
+          type: string
+          example: Ahmed Benali
+        epi_portes:
+          type: array
+          items:
+            type: string
+          description: Équipements de protection portés
+          example: [gants nitrile, masque FFP2, lunettes, combinaison]
+        conditions_meteo:
+          type: object
+          properties:
+            temperature_c:
+              type: number
+              example: 22
+            vent_kmh:
+              type: number
+              example: 8
+            hygrometrie_pct:
+              type: number
+              example: 65
+        notes:
+          type: string
+          example: Application en début de matinée, parcelle sèche
+
+    TraitementResponse:
+      type: object
+      properties:
+        traitement_id:
+          type: string
+          example: tr_9c3b1f2a
+        statut:
+          type: string
+          enum: [enregistré, alerte_dar, alerte_produit]
+          example: enregistré
+        dar_restant:
+          type: integer
+          description: Nombre de jours restants avant DAR à la date de récolte prévue
+          example: 7
+        alertes:
+          type: array
+          items:
+            type: string
+          example: []
+
+    # Groupe de résistance
+    GroupeResistance:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [irac, frac, hrac]
+          example: frac
+        numero:
+          type: string
+          example: "9"
+        nom:
+          type: string
+          example: Inhibiteurs de la biosynthèse des stérols (SBI) — classe II
+        mecanisme_action:
+          type: string
+          example: Inhibition de la C14-déméthylase dans la biosynthèse de l'ergostérol
+        risque_resistance:
+          type: string
+          enum: [faible, modéré, élevé, très élevé]
+          example: modéré
+        recommandation_rotation:
+          type: string
+          example: Ne pas appliquer plus de 2 fois par saison. Alterner avec FRAC 7 ou FRAC 12.
+        matieres_actives:
+          type: array
+          items:
+            type: string
+          example: [cyprodinil, fenarimol, penconazole, tebuconazole, trifloxystrobin]
+
+    # Alerte
+    Alerte:
+      type: object
+      properties:
+        alerte_id:
+          type: string
+          example: al_7d4e2f1b
+        type:
+          type: string
+          enum: [DAR_DEPASSE, PRODUIT_RETIRE, LMR_MODIFIEE, ROTATION_REQUISE, ZNT_VIOLATION]
+          example: DAR_DEPASSE
+        urgence:
+          type: string
+          enum: [critique, élevée, modérée, information]
+          example: critique
+        message:
+          type: string
+          example: "Le DAR du produit Switch 62.5 WG (3 jours) sera dépassé à la récolte prévue le 2025-03-18."
+        parcelle_id:
+          type: string
+          example: parcelle_nord_003
+        traitement_id:
+          type: string
+          example: tr_9c3b1f2a
+        action_recommandee:
+          type: string
+          example: Reporter la récolte d'au moins 2 jours ou contacter votre technicien.
+        date_alerte:
+          type: string
+          format: date-time
+          example: "2025-03-15T14:30:00Z"
+        lue:
+          type: boolean
+          example: false
+
+    # Erreur standard
+    Erreur:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              example: CULTURE_NOT_FOUND
+            message:
+              type: string
+              example: "La culture 'avocat' n'est pas dans l'index ONSSA."
+            suggestion:
+              type: string
+              example: "Essayez 'avocatier' ou consultez GET /cultures"
+            request_id:
+              type: string
+              example: req_9a3b2c1d
+
+    # Pagination
+    Pagination:
+      type: object
+      properties:
+        page:
+          type: integer
+          example: 1
+        par_page:
+          type: integer
+          example: 50
+        total:
+          type: integer
+          example: 1247
+        pages_total:
+          type: integer
+          example: 25
+
+  # ── PARAMETERS ──────────────────────────────
+  parameters:
+    LangParam:
+      name: lang
+      in: query
+      description: Langue des libellés dans la réponse
+      schema:
+        type: string
+        enum: [fr, ar]
+        default: fr
+
+    PageParam:
+      name: page
+      in: query
+      description: Numéro de page (pagination)
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+
+  # ── RESPONSES ───────────────────────────────
+  responses:
+    Unauthorized:
+      description: Clé API manquante, expirée ou invalide
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erreur'
+          example:
+            error:
+              code: UNAUTHORIZED
+              message: "Clé API invalide ou expirée."
+              suggestion: "Vérifiez votre clé sur agrisage.ma/dashboard"
+              request_id: req_err_001
+
+    PlanLimit:
+      description: Fonctionnalité non disponible sur votre plan actuel
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erreur'
+          example:
+            error:
+              code: PLAN_LIMIT
+              message: "La traçabilité GlobalGAP nécessite le plan Pro ou supérieur."
+              suggestion: "Passez au plan Pro sur agrisage.ma/tarifs"
+              request_id: req_err_002
+
+    QuotaExceeded:
+      description: Quota mensuel de requêtes atteint
+      headers:
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: Quota total du plan
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: Requêtes restantes ce mois
+        X-RateLimit-Reset:
+          schema:
+            type: string
+            format: date-time
+          description: Date de renouvellement du quota
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erreur'
+
+    NotFound:
+      description: Ressource introuvable
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erreur'
+
+    BadRequest:
+      description: Paramètre invalide ou manquant
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Erreur'
+
+# ─────────────────────────────────────────────
+# PATHS
+# ─────────────────────────────────────────────
+paths:
+
+  # ── POST /conseil ────────────────────────────
+  /conseil:
+    post:
+      tags: [Conseil]
+      summary: Générer un conseil phytosanitaire
+      operationId: genererConseil
+      description: |
+        Génère un conseil phytosanitaire complet pour une culture et un problème donné.
+        
+        Le moteur de décision croise en parallèle :
+        - **Index ONSSA** : homologation, dose, DAR
+        - **IRAC / FRAC / HRAC** : groupe de résistance, rotation recommandée
+        - **GlobalGAP v6** : conformité du produit et de la pratique
+        - **LMR UE** : Règlement 396/2005 (si `export_ue: true`, plan Pro+)
+        - **Faune utile** : toxicité abeilles et auxiliaires (PPDB)
+        - **Historique FRAC** : rotation anti-résistance automatique
+        
+        **Plans requis** : Starter (index ONSSA uniquement) · Growth+ (IRAC/FRAC/HRAC) · Pro+ (GlobalGAP, LMR UE, SDK)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [culture, ravageur, stade]
+              properties:
+                culture:
+                  type: string
+                  description: Nom de la culture en français
+                  example: tomate
+                ravageur:
+                  type: string
+                  description: Organisme nuisible ou maladie cible
+                  example: botrytis
+                stade:
+                  type: string
+                  enum: [germination, levee, vegetation, floraison, fructification, recolte, post-recolte]
+                  example: floraison
+                region:
+                  type: string
+                  description: Code région marocaine
+                  enum:
+                    - souss-massa
+                    - gharb-chrarda
+                    - marrakech-safi
+                    - fes-meknes
+                    - tanger-tetouan
+                    - oriental
+                    - rabat-sale-kenitra
+                    - beni-mellal-khenifra
+                    - draa-tafilalet
+                    - laayoune-sakia
+                  example: souss-massa
+                dar_max:
+                  type: integer
+                  description: DAR maximum acceptable en jours. Filtre les produits dont le DAR dépasse cette valeur.
+                  minimum: 0
+                  maximum: 90
+                  example: 7
+                globalgap:
+                  type: boolean
+                  description: Si true, exclut les produits non conformes GlobalGAP v6
+                  default: false
+                  example: true
+                export_ue:
+                  type: boolean
+                  description: Applique les LMR strictes Règlement UE 396/2005. Nécessite plan Pro+.
+                  default: false
+                  example: false
+                historique_frac:
+                  type: array
+                  items:
+                    type: string
+                  description: Groupes FRAC déjà utilisés ce cycle sur cette parcelle. Active la rotation anti-résistance.
+                  example: ["1", "9"]
+                historique_irac:
+                  type: array
+                  items:
+                    type: string
+                  description: Groupes IRAC déjà utilisés ce cycle
+                  example: ["3A"]
+                nb_alternatives:
+                  type: integer
+                  description: Nombre de produits alternatifs à inclure dans la réponse
+                  minimum: 0
+                  maximum: 5
+                  default: 2
+                lang:
+                  type: string
+                  enum: [fr, ar]
+                  default: fr
+            examples:
+              tomate_floraison_botrytis:
+                summary: Tomate en floraison — botrytis, export UE, GlobalGAP
+                value:
+                  culture: tomate
+                  ravageur: botrytis
+                  stade: floraison
+                  region: souss-massa
+                  dar_max: 7
+                  globalgap: true
+                  export_ue: true
+                  historique_frac: ["1"]
+                  lang: fr
+              ble_vegetation_septoriose:
+                summary: Blé tendre — septoriose, première application
+                value:
+                  culture: blé tendre
+                  ravageur: septoriose
+                  stade: vegetation
+                  region: gharb-chrarda
+                  dar_max: 30
+                  globalgap: false
+              vigne_mildiou_rotation:
+                summary: Vigne — mildiou, rotation après FRAC 4
+                value:
+                  culture: vigne
+                  ravageur: mildiou
+                  stade: vegetation
+                  dar_max: 21
+                  historique_frac: ["4", "40"]
+                  globalgap: true
+      responses:
+        "200":
+          description: Conseil généré avec succès
+          headers:
+            X-RateLimit-Remaining:
+              schema:
+                type: integer
+              description: Requêtes restantes ce mois
+            X-Response-Time:
+              schema:
+                type: string
+              description: Temps de traitement. Ex — 142ms
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conseil'
+              example:
+                conseil_id: c_8f2a1d3e
+                produit: Switch 62.5 WG
+                matiere_active: cyprodinil + fludioxonil
+                numero_amm: MA-2018-0042
+                dose:
+                  valeur: 0.8
+                  unite: kg/ha
+                dar: 3
+                volume_bouillie: 400-600 L/ha
+                groupe_frac: "9 + 12"
+                groupe_irac: null
+                groupe_hrac: null
+                homologue_onssa: true
+                conforme_globalgap: true
+                lmr_ue_respectee: true
+                risque_abeilles: faible
+                risque_auxiliaires: faible
+                alertes:
+                  - "Stade floraison : appliquer de préférence après 19h pour limiter l'exposition des pollinisateurs"
+                alternatives:
+                  - produit: Scala SC
+                    matiere_active: pyrimethanil
+                    groupe_frac: "9"
+                    dar: 3
+                    dose:
+                      valeur: 1.5
+                      unite: L/ha
+                timestamp: "2025-03-15T10:42:00Z"
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/PlanLimit'
+        "429":
+          $ref: '#/components/responses/QuotaExceeded'
+
+  # ── GET /produits ────────────────────────────
+  /produits:
+    get:
+      tags: [Produits]
+      summary: Lister les produits ONSSA
+      operationId: listerProduits
+      description: |
+        Retourne la liste des produits phytosanitaires de l'index ONSSA,
+        avec pagination et filtres. Mise à jour en temps réel après chaque
+        publication officielle de l'ONSSA.
+      parameters:
+        - name: culture
+          in: query
+          description: Filtre par culture homologuée
+          schema:
+            type: string
+          example: tomate
+        - name: usage
+          in: query
+          description: Type d'usage phytosanitaire
+          schema:
+            type: string
+            enum: [fongicide, insecticide, herbicide, nematicide, acaricide, molluscicide]
+        - name: ma
+          in: query
+          description: Recherche par matière active (correspondance partielle)
+          schema:
+            type: string
+          example: cyprodinil
+        - name: statut
+          in: query
+          description: Statut d'homologation
+          schema:
+            type: string
+            enum: [homologué, retiré, suspendu, tous]
+            default: homologué
+        - name: groupe_frac
+          in: query
+          description: Filtre par groupe FRAC
+          schema:
+            type: string
+          example: "9"
+        - name: groupe_irac
+          in: query
+          description: Filtre par groupe IRAC
+          schema:
+            type: string
+          example: "28"
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/LangParam'
+      responses:
+        "200":
+          description: Liste de produits paginée
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProduitONSSA'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "429":
+          $ref: '#/components/responses/QuotaExceeded'
+
+  /produits/{id}:
+    get:
+      tags: [Produits]
+      summary: Détail d'un produit ONSSA
+      operationId: getProduit
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: prod_onssa_00412
+        - $ref: '#/components/parameters/LangParam'
+      responses:
+        "200":
+          description: Détail complet du produit
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProduitONSSA'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  # ── POST /traitement ─────────────────────────
+  /traitement:
+    post:
+      tags: [Traçabilité]
+      summary: Enregistrer un traitement
+      operationId: enregistrerTraitement
+      description: |
+        Enregistre un traitement phytosanitaire réalisé dans le carnet de traitements.
+        
+        - Alimente la traçabilité GlobalGAP (export PDF disponible via `GET /carnet?format=pdf`)
+        - Met à jour l'historique FRAC/IRAC pour les prochains conseils sur la même parcelle
+        - Déclenche une alerte `DAR_DEPASSE` si `date_recolte_prevue` est renseignée et le DAR risque d'être dépassé
+        
+        **Plan requis : Pro ou supérieur**
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TraitementInput'
+      responses:
+        "201":
+          description: Traitement enregistré
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraitementResponse'
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/PlanLimit'
+
+  # ── GET /carnet ──────────────────────────────
+  /carnet:
+    get:
+      tags: [Traçabilité]
+      summary: Consulter le carnet de traitements
+      operationId: getCarnet
+      description: |
+        Retourne l'historique des traitements enregistrés avec filtres.
+        
+        Le paramètre `format=pdf` génère un rapport PDF conforme GlobalGAP v6,
+        directement utilisable pour les audits de certification.
+        
+        **Plan requis : Pro ou supérieur**
+      parameters:
+        - name: parcelle_id
+          in: query
+          description: Filtre par identifiant de parcelle
+          schema:
+            type: string
+          example: parcelle_nord_003
+        - name: du
+          in: query
+          description: Date de début (ISO 8601)
+          schema:
+            type: string
+            format: date
+          example: "2025-01-01"
+        - name: au
+          in: query
+          description: Date de fin (ISO 8601)
+          schema:
+            type: string
+            format: date
+          example: "2025-03-31"
+        - name: format
+          in: query
+          description: Format de retour. `pdf` génère le rapport d'audit GlobalGAP.
+          schema:
+            type: string
+            enum: [json, pdf]
+            default: json
+        - $ref: '#/components/parameters/PageParam'
+      responses:
+        "200":
+          description: Carnet de traitements ou PDF d'audit
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TraitementResponse'
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+            application/pdf:
+              schema:
+                type: string
+                format: binary
+                description: Rapport PDF GlobalGAP prêt pour audit
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "403":
+          $ref: '#/components/responses/PlanLimit'
+
+  # ── GET /groupes ─────────────────────────────
+  /groupes:
+    get:
+      tags: [Référentiels]
+      summary: Lister les groupes de résistance
+      operationId: listerGroupes
+      description: |
+        Retourne les groupes de résistance IRAC (insecticides), FRAC (fongicides)
+        ou HRAC (herbicides) avec leurs matières actives, mécanismes d'action
+        et recommandations de rotation. Données synchronisées annuellement
+        avec les publications officielles IRAC/FRAC/HRAC.
+      parameters:
+        - name: type
+          in: query
+          required: true
+          description: Type de classification
+          schema:
+            type: string
+            enum: [irac, frac, hrac]
+          example: frac
+        - name: groupe
+          in: query
+          description: Filtre par numéro de groupe
+          schema:
+            type: string
+          example: "9"
+        - name: ma
+          in: query
+          description: Recherche par matière active pour identifier son groupe
+          schema:
+            type: string
+          example: cyprodinil
+        - name: risque
+          in: query
+          description: Filtre par niveau de risque de résistance
+          schema:
+            type: string
+            enum: [faible, modéré, élevé, très élevé]
+        - $ref: '#/components/parameters/LangParam'
+      responses:
+        "200":
+          description: Liste des groupes de résistance
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/GroupeResistance'
+                  total:
+                    type: integer
+                    example: 52
+        "400":
+          $ref: '#/components/responses/BadRequest'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+  # ── GET /alertes ─────────────────────────────
+  /alertes:
+    get:
+      tags: [Alertes]
+      summary: Consulter les alertes actives
+      operationId: getAlertes
+      description: |
+        Retourne les alertes actives pour votre compte :
+        
+        | Type | Déclencheur | Urgence |
+        |---|---|---|
+        | `DAR_DEPASSE` | Date récolte ≤ DAR du produit traité | critique |
+        | `PRODUIT_RETIRE` | Produit du carnet retiré par l'ONSSA | critique |
+        | `LMR_MODIFIEE` | LMR UE abaissée pour un produit récent | élevée |
+        | `ROTATION_REQUISE` | Même groupe FRAC 2 fois de suite | modérée |
+        | `ZNT_VIOLATION` | Application en zone non traitée | critique |
+        
+        Les webhooks (plan Pro+) envoient ces alertes en push dès leur génération.
+        Consultez la documentation Webhooks pour la configuration.
+      parameters:
+        - name: type
+          in: query
+          description: Filtre par type d'alerte
+          schema:
+            type: string
+            enum: [DAR_DEPASSE, PRODUIT_RETIRE, LMR_MODIFIEE, ROTATION_REQUISE, ZNT_VIOLATION]
+        - name: urgence
+          in: query
+          description: Filtre par niveau d'urgence
+          schema:
+            type: string
+            enum: [critique, élevée, modérée, information]
+        - name: lue
+          in: query
+          description: Filtre par statut de lecture
+          schema:
+            type: boolean
+        - name: parcelle_id
+          in: query
+          description: Filtre par parcelle
+          schema:
+            type: string
+        - $ref: '#/components/parameters/PageParam'
+      responses:
+        "200":
+          description: Liste des alertes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Alerte'
+                  non_lues:
+                    type: integer
+                    description: Nombre total d'alertes non lues
+                    example: 3
+                  pagination:
+                    $ref: '#/components/schemas/Pagination'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+
+  /alertes/{id}/lue:
+    patch:
+      tags: [Alertes]
+      summary: Marquer une alerte comme lue
+      operationId: marquerAlerteLue
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          example: al_7d4e2f1b
+      responses:
+        "200":
+          description: Alerte marquée comme lue
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  alerte_id:
+                    type: string
+                  lue:
+                    type: boolean
+                    example: true
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+        "404":
+          $ref: '#/components/responses/NotFound'
+
+  # ── GET /cultures ────────────────────────────
+  /cultures:
+    get:
+      tags: [Référentiels]
+      summary: Lister les cultures disponibles
+      operationId: listerCultures
+      description: Retourne la liste complète des cultures présentes dans l'index ONSSA avec leurs identifiants normalisés.
+      parameters:
+        - name: q
+          in: query
+          description: Recherche par nom (correspondance partielle)
+          schema:
+            type: string
+          example: tom
+        - $ref: '#/components/parameters/LangParam'
+      responses:
+        "200":
+          description: Liste des cultures
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          example: tomate
+                        nom_fr:
+                          type: string
+                          example: Tomate
+                        nom_ar:
+                          type: string
+                          example: الطماطم
+                        famille:
+                          type: string
+                          example: Solanacées
+                        nb_produits_homologues:
+                          type: integer
+                          example: 87
+                  total:
+                    type: integer
+                    example: 183
+        "401":
+          $ref: '#/components/responses/Unauthorized'
