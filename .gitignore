@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.eggs/
+
+# Node.js
+node_modules/
+
+# Environnements
+.env
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
