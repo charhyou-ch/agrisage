@@ -1,0 +1,183 @@
+# agrisage — SDK Python
+
+SDK Python officiel pour l'[API AgriSage](https://docs.agrisage.ma) — conseil phytosanitaire pour l'agriculture marocaine.
+
+> Aucune dépendance externe. Python ≥ 3.8. Stdlib uniquement.
+
+## Installation
+
+```bash
+pip install agrisage
+```
+
+## Démarrage rapide
+
+```python
+import os
+from agrisage import AgriSageClient, STADES, REGIONS
+
+client = AgriSageClient(api_key=os.environ["AGRISAGE_API_KEY"])
+
+response = client.conseil.generer(
+    culture="tomate",
+    ravageur="botrytis",
+    stade=STADES.FLORAISON,
+    region=REGIONS.SOUSS_MASSA,
+    dar_max=7,
+    globalgap=True,
+)
+
+print(response.data["produit"])          # "Switch 62.5 WG"
+print(response.data["dar"])              # 3
+print(response.data["groupe_frac"])      # "9 + 12"
+print(response.data["risque_abeilles"])  # "faible"
+print(response.rate_limit.remaining)     # 9843
+```
+
+## Configuration
+
+```python
+client = AgriSageClient(
+    api_key     = "as_live_xxxxxxxxxxxx",  # requis
+    lang        = "fr",                   # "fr" (défaut) | "ar"
+    sandbox     = False,                  # True = données fictives, quota illimité
+    timeout     = 30,                     # secondes
+    max_retries = 2,                      # retries auto sur 5xx / réseau
+    debug       = False,                  # logs via logging.DEBUG
+)
+```
+
+## Référence
+
+### `client.conseil.generer(**params)`
+
+```python
+response = client.conseil.generer(
+    culture          = "tomate",      # requis
+    ravageur         = "botrytis",    # requis
+    stade            = "floraison",   # requis — ou STADES.FLORAISON
+    region           = "souss-massa", # REGIONS.SOUSS_MASSA
+    dar_max          = 7,
+    globalgap        = True,
+    export_ue        = True,          # plan Pro+
+    historique_frac  = ["1", "9"],    # rotation anti-résistance
+    nb_alternatives  = 3,
+)
+```
+
+### `client.produits.lister(**params)` / `.obtenir(id)`
+
+```python
+r = client.produits.lister(culture="tomate", usage="fongicide", groupe_frac="9")
+r = client.produits.obtenir("prod_onssa_00412")
+```
+
+### `client.traitement.enregistrer(**params)` _(plan Pro+)_
+
+```python
+r = client.traitement.enregistrer(
+    parcelle_id         = "parcelle_nord_003",
+    produit_nom         = "Switch 62.5 WG",
+    dose_appliquee      = {"valeur": 0.8, "unite": "kg/ha"},
+    date_traitement     = "2025-03-15",
+    date_recolte_prevue = "2025-03-25",
+    operateur           = "Ahmed Benali",
+    epi_portes          = ["gants nitrile", "masque FFP2"],
+    conditions_meteo    = {"temperature_c": 22, "vent_kmh": 8},
+)
+```
+
+### `client.carnet.obtenir(**params)` / `.exporter_pdf(**params)` _(plan Pro+)_
+
+```python
+# Export PDF GlobalGAP
+pdf_bytes = client.carnet.exporter_pdf(
+    parcelle_id = "parcelle_nord_003",
+    du          = "2025-01-01",
+    au          = "2025-12-31",
+)
+with open("audit_globalgap_2025.pdf", "wb") as f:
+    f.write(pdf_bytes)
+```
+
+### `client.groupes.frac()` / `.irac()` / `.hrac()`
+
+```python
+r = client.groupes.frac(ma="cyprodinil")
+r = client.groupes.irac(risque="élevé")
+r = client.groupes.lister(type="hrac", groupe="B")
+```
+
+### `client.alertes.lister()` / `.non_lues()` / `.critiques()` / `.marquer_lue(id)`
+
+```python
+r  = client.alertes.non_lues()
+r  = client.alertes.critiques(parcelle_id="p1")
+r  = client.alertes.lister(type="DAR_DEPASSE")
+ok = client.alertes.marquer_lue("al_7d4e2f1b")
+```
+
+### `client.cultures.rechercher(terme)` / `.lister(q=...)`
+
+```python
+r = client.cultures.rechercher("tom")
+# r.data["data"] → [{"id": "tomate", "nom_fr": "Tomate", "nom_ar": "الطماطم", ...}]
+```
+
+## Gestion des erreurs
+
+```python
+from agrisage import (
+    AuthenticationError,
+    PlanLimitError,
+    QuotaExceededError,
+    ValidationError,
+    NetworkError,
+    AgriSageError,
+)
+
+try:
+    r = client.conseil.generer(culture="tomate", ravageur="botrytis", stade="floraison")
+except AuthenticationError as e:
+    print(f"Clé API invalide : {e.message}")
+except PlanLimitError as e:
+    print(f"Plan insuffisant : {e.suggestion}")
+except QuotaExceededError as e:
+    print(f"Quota épuisé. Renouvellement : {e.reset_at}")
+except ValidationError as e:
+    print(f"Paramètre invalide : {e.message}")
+except NetworkError as e:
+    print(f"Erreur réseau : {e.message}")
+```
+
+Toutes les exceptions exposent : `message`, `code`, `status_code`, `request_id`, `suggestion`.
+
+## Constantes
+
+```python
+from agrisage import STADES, REGIONS, USAGES, ALERTES_TYPES
+
+STADES.FLORAISON        # "floraison"
+REGIONS.SOUSS_MASSA     # "souss-massa"
+USAGES.FONGICIDE        # "fongicide"
+ALERTES_TYPES.DAR_DEPASSE  # "DAR_DEPASSE"
+```
+
+## Sandbox
+
+```python
+client = AgriSageClient(api_key="as_test_xxx", sandbox=True)
+# Quota illimité, données fictives — idéal pour CI/CD
+```
+
+## Tests
+
+```bash
+python tests/test_sdk.py
+# ou
+python -m pytest tests/
+```
+
+## Licence
+
+MIT © [AgriSage](https://agrisage.ma)
