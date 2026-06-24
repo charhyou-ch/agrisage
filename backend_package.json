@@ -1,0 +1,26 @@
+{
+  "name": "@agrisage/api",
+  "version": "1.0.0",
+  "description": "AgriSage API — Backend conseil phytosanitaire Maroc",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "test": "node tests/test_conseil.js"
+  },
+  "keywords": ["agrisage","phytosanitaire","maroc","onssa","api"],
+  "author": "AgriSage <api@agrisage.ma>",
+  "license": "MIT",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "helmet": "^7.1.0",
+    "uuid": "^9.0.0"
+  },
+  "notes": {
+    "base_de_donnees": "Utilise le module sqlite3 natif Node.js (nécessite compilation). En dev Windows sans compilateur C++, utiliser le backend Python (agrisage_conseil_server.py) ou PostgreSQL en production.",
+    "production": "Remplacer SQLite par PostgreSQL via pg + pool de connexions"
+  }
+}
