@@ -1,1 +1,1 @@
-# AgriSage — stdlib uniquement, aucune dependance externe
+# no dependencies
