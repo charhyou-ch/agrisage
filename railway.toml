@@ -1,6 +1,3 @@
-[build]
-builder = "nixpacks"
-
 [deploy]
 startCommand = "python agrisage_conseil_server.py --port $PORT --db onssa_index.db"
 healthcheckPath = "/health"
