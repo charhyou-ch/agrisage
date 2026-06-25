@@ -1,4 +1,5 @@
+﻿[build]
+builder = "nixpacks"
+
 [deploy]
-startCommand = "python agrisage_conseil_server.py --port $PORT --db onssa_index.db"
-healthcheckPath = "/health"
-healthcheckTimeout = 30
+startCommand = "npx serve dist -l $PORT"
