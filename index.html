@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AgriSage — API Conseil Phytosanitaire Maroc</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --soil:    #1C1A14;
+    --leaf:    #2D5A1B;
+    --sage:    #4A7C3F;
+    --mist:    #EEF4EC;
+    --parch:   #F7F3ED;
+    --amber:   #C8841A;
+    --text:    #1C1A14;
+    --subtle:  #6B6860;
+    --border:  #D8D4CC;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--parch);
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  /* NAV */
+  nav {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--soil);
+    padding: 0 2rem;
+    display: flex; align-items: center; justify-content: space-between;
+    height: 60px;
+    border-bottom: 2px solid var(--leaf);
+  }
+  .nav-brand {
+    display: flex; align-items: center; gap: 0.6rem;
+    font-family: 'DM Serif Display', serif;
+    font-size: 1.25rem; color: #fff;
+    text-decoration: none;
+  }
+  .nav-brand span { color: #8DC97A; }
+  .nav-links { display: flex; gap: 2rem; align-items: center; }
+  .nav-links a {
+    color: #C8D4C4; text-decoration: none;
+    font-size: 0.875rem; font-weight: 500;
+    transition: color .2s;
+  }
+  .nav-links a:hover { color: #fff; }
+  .btn-nav {
+    background: var(--sage); color: #fff !important;
+    padding: 0.4rem 1rem; border-radius: 4px;
+    font-weight: 600 !important;
+  }
+  .btn-nav:hover { background: var(--leaf) !important; }
+
+  /* HERO */
+  .hero {
+    background: var(--soil);
+    color: #fff;
+    padding: 6rem 2rem 5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(45,90,27,0.35) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .hero-eyebrow {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.8rem; font-weight: 600;
+    color: #8DC97A;
+    letter-spacing: .12em; text-transform: uppercase;
+    border: 1px solid rgba(141,201,122,.35);
+    padding: .3rem .9rem; border-radius: 2px;
+    margin-bottom: 1.75rem;
+  }
+  .hero h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(2.4rem, 6vw, 4rem);
+    line-height: 1.1;
+    max-width: 760px; margin: 0 auto 1.5rem;
+  }
+  .hero h1 em { font-style: italic; color: #8DC97A; }
+  .hero-sub {
+    font-size: 1.1rem; color: #B8C8B4;
+    max-width: 560px; margin: 0 auto 2.5rem;
+  }
+  .hero-actions { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+  .btn-primary {
+    background: var(--sage); color: #fff;
+    padding: .75rem 1.75rem; border-radius: 4px;
+    font-weight: 600; font-size: 0.95rem;
+    text-decoration: none; transition: background .2s;
+    border: none; cursor: pointer;
+  }
+  .btn-primary:hover { background: var(--leaf); }
+  .btn-outline {
+    background: transparent; color: #8DC97A;
+    padding: .75rem 1.75rem; border-radius: 4px;
+    font-weight: 600; font-size: 0.95rem;
+    text-decoration: none;
+    border: 1px solid rgba(141,201,122,.5);
+    transition: border-color .2s, color .2s;
+  }
+  .btn-outline:hover { border-color: #8DC97A; color: #fff; }
+
+  /* LIVE DEMO STRIP */
+  .demo-strip {
+    background: #111008;
+    border-top: 1px solid #2a2820;
+    border-bottom: 1px solid #2a2820;
+    padding: 1.25rem 2rem;
+    overflow: hidden;
+  }
+  .demo-inner {
+    max-width: 900px; margin: 0 auto;
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 1rem; align-items: start;
+  }
+  .demo-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem; color: #6B7A68;
+    text-transform: uppercase; letter-spacing: .1em;
+    margin-bottom: .4rem;
+  }
+  pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.78rem; color: #8DC97A;
+    background: #0D0C08;
+    border: 1px solid #2a2820;
+    border-radius: 4px;
+    padding: 1rem;
+    overflow-x: auto;
+    line-height: 1.6;
+  }
+  .token-key { color: #6B9FD4; }
+  .token-str { color: #C3E88D; }
+  .token-num { color: #F78C6C; }
+  .token-bool { color: #FF5370; }
+
+  /* STATS */
+  .stats {
+    background: var(--mist);
+    border-bottom: 1px solid var(--border);
+    padding: 2.5rem 2rem;
+  }
+  .stats-inner {
+    max-width: 900px; margin: 0 auto;
+    display: flex; justify-content: space-around; flex-wrap: wrap; gap: 2rem;
+    text-align: center;
+  }
+  .stat-val {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2.4rem; color: var(--leaf);
+    line-height: 1;
+  }
+  .stat-lbl { font-size: 0.8rem; color: var(--subtle); margin-top: .3rem; }
+
+  /* SECTIONS */
+  .section { padding: 5rem 2rem; }
+  .section-inner { max-width: 900px; margin: 0 auto; }
+  .section-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.4rem);
+    margin-bottom: .6rem;
+  }
+  .section-sub { color: var(--subtle); margin-bottom: 3rem; max-width: 520px; }
+
+  /* FEATURES */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+  }
+  .feature-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.5rem;
+    position: relative;
+  }
+  .feature-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--sage);
+    border-radius: 6px 6px 0 0;
+  }
+  .feature-icon { font-size: 1.6rem; margin-bottom: .75rem; }
+  .feature-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: .4rem; }
+  .feature-card p { font-size: 0.875rem; color: var(--subtle); line-height: 1.5; }
+
+  /* ENDPOINTS */
+  .endpoints { background: var(--soil); color: #fff; }
+  .endpoint-list { display: flex; flex-direction: column; gap: .75rem; }
+  .endpoint {
+    display: flex; align-items: center; gap: 1rem;
+    background: #111008;
+    border: 1px solid #2a2820;
+    border-radius: 4px;
+    padding: .85rem 1.25rem;
+  }
+  .method {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .72rem; font-weight: 600;
+    color: #8DC97A;
+    background: rgba(141,201,122,.12);
+    padding: .2rem .5rem; border-radius: 3px;
+    min-width: 44px; text-align: center;
+  }
+  .ep-path {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: .85rem; color: #C8D4C4;
+    flex: 1;
+  }
+  .ep-desc { font-size: .8rem; color: #6B7A68; }
+
+  /* PRICING */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.25rem;
+  }
+  .plan-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 1.75rem 1.5rem;
+    position: relative;
+  }
+  .plan-card.featured {
+    border-color: var(--sage);
+    box-shadow: 0 0 0 1px var(--sage);
+  }
+  .plan-badge {
+    position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
+    background: var(--sage); color: #fff;
+    font-size: .7rem; font-weight: 700;
+    padding: .2rem .8rem; border-radius: 20px;
+    letter-spacing: .05em; text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .plan-name { font-weight: 700; font-size: .85rem; color: var(--subtle); text-transform: uppercase; letter-spacing: .08em; margin-bottom: .5rem; }
+  .plan-price {
+    font-family: 'DM Serif Display', serif;
+    font-size: 2rem; color: var(--text);
+    line-height: 1;
+  }
+  .plan-price sup { font-size: 1rem; vertical-align: super; }
+  .plan-price span { font-family: 'Inter', sans-serif; font-size: .8rem; color: var(--subtle); }
+  .plan-reqs { font-size: .8rem; color: var(--subtle); margin: .5rem 0 1rem; }
+  .plan-features { list-style: none; display: flex; flex-direction: column; gap: .4rem; margin-bottom: 1.5rem; }
+  .plan-features li { font-size: .85rem; display: flex; align-items: flex-start; gap: .5rem; }
+  .plan-features li::before { content: '✓'; color: var(--sage); font-weight: 700; flex-shrink: 0; margin-top: .05rem; }
+  .plan-cta {
+    display: block; text-align: center;
+    background: var(--mist); color: var(--leaf);
+    border: 1px solid var(--border);
+    padding: .6rem; border-radius: 4px;
+    font-weight: 600; font-size: .875rem;
+    text-decoration: none; transition: background .2s;
+  }
+  .plan-card.featured .plan-cta { background: var(--sage); color: #fff; border-color: var(--sage); }
+  .plan-cta:hover { opacity: .85; }
+
+  /* AUDIENCE */
+  .audience-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+  .audience-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 2rem;
+  }
+  .audience-card h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: .5rem; }
+  .audience-card p { font-size: .875rem; color: var(--subtle); margin-bottom: 1rem; }
+  .audience-card ul { list-style: none; display: flex; flex-direction: column; gap: .4rem; }
+  .audience-card ul li { font-size: .875rem; display: flex; gap: .5rem; }
+  .audience-card ul li::before { content: '→'; color: var(--sage); }
+
+  /* CTA FOOTER */
+  .cta-footer {
+    background: var(--leaf);
+    color: #fff;
+    padding: 5rem 2rem;
+    text-align: center;
+  }
+  .cta-footer h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    margin-bottom: 1rem;
+  }
+  .cta-footer p { color: rgba(255,255,255,.75); margin-bottom: 2rem; font-size: 1rem; }
+  .btn-white {
+    background: #fff; color: var(--leaf);
+    padding: .85rem 2rem; border-radius: 4px;
+    font-weight: 700; text-decoration: none;
+    font-size: 1rem; display: inline-block;
+    transition: opacity .2s;
+  }
+  .btn-white:hover { opacity: .9; }
+
+  /* FOOTER */
+  footer {
+    background: var(--soil); color: #6B7A68;
+    padding: 2rem; text-align: center;
+    font-size: .8rem; border-top: 1px solid #2a2820;
+  }
+  footer a { color: #8DC97A; text-decoration: none; }
+
+  @media (max-width: 640px) {
+    .demo-inner, .audience-split { grid-template-columns: 1fr; }
+    .hero { padding: 4rem 1.5rem 3.5rem; }
+    nav { padding: 0 1rem; }
+    .nav-links a:not(.btn-nav) { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand">🌿 Agri<span>Sage</span></a>
+  <div class="nav-links">
+    <a href="#fonctionnalites">Fonctionnalités</a>
+    <a href="#api">API</a>
+    <a href="#tarifs">Tarifs</a>
+    <a href="https://web-production-0e1ad.up.railway.app/docs" target="_blank">Docs</a>
+    <a href="https://agrisage-production.up.railway.app" target="_blank" class="btn-nav">Dashboard →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">API Phytosanitaire · Maroc · ONSSA 2025</div>
+  <h1>Le conseil phyto <em>juste</em>,<br>au bon moment, par API</h1>
+  <p class="hero-sub">Intégrez 1 355 produits homologués ONSSA, les référentiels FRAC/IRAC/HRAC et la logique de rotation antiresistance dans n'importe quelle application agricole.</p>
+  <div class="hero-actions">
+    <a href="#tarifs" class="btn-primary">Démarrer gratuitement</a>
+    <a href="https://web-production-0e1ad.up.railway.app/docs" target="_blank" class="btn-outline">Voir la documentation</a>
+  </div>
+</section>
+
+<!-- LIVE DEMO -->
+<div class="demo-strip">
+  <div class="demo-inner">
+    <div>
+      <div class="demo-label">Requête</div>
+      <pre>POST /v1/conseil
+Authorization: Bearer <span class="token-str">as_live_...</span>
+
+{
+  <span class="token-key">"culture"</span>: <span class="token-str">"tomate"</span>,
+  <span class="token-key">"ravageur"</span>: <span class="token-str">"botrytis"</span>,
+  <span class="token-key">"stade"</span>: <span class="token-str">"floraison"</span>,
+  <span class="token-key">"dar_max"</span>: <span class="token-num">7</span>
+}</pre>
+    </div>
+    <div>
+      <div class="demo-label">Réponse</div>
+      <pre>{
+  <span class="token-key">"produit"</span>: <span class="token-str">"POWER PRO"</span>,
+  <span class="token-key">"dar"</span>: <span class="token-num">3</span>,
+  <span class="token-key">"groupe_frac"</span>: <span class="token-str">"7"</span>,
+  <span class="token-key">"abeilles"</span>: <span class="token-str">"faible"</span>,
+  <span class="token-key">"alerte"</span>: <span class="token-str">"Appliquer après 19h"</span>,
+  <span class="token-key">"alternatives"</span>: [...]
+}</pre>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stats-inner">
+    <div>
+      <div class="stat-val">1 355</div>
+      <div class="stat-lbl">Produits homologués ONSSA</div>
+    </div>
+    <div>
+      <div class="stat-val">179</div>
+      <div class="stat-lbl">Cultures indexées</div>
+    </div>
+    <div>
+      <div class="stat-val">FRAC 2025</div>
+      <div class="stat-lbl">Référentiel antiresistance</div>
+    </div>
+    <div>
+      <div class="stat-val">&lt; 80 ms</div>
+      <div class="stat-lbl">Temps de réponse moyen</div>
+    </div>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section" id="fonctionnalites">
+  <div class="section-inner">
+    <h2 class="section-title">Tout ce dont vous avez besoin</h2>
+    <p class="section-sub">Une seule API, structurée pour les techniciens terrain comme pour les développeurs.</p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🛡️</div>
+        <h3>Données ONSSA officielles</h3>
+        <p>Index phytosanitaire marocain complet, mis à jour régulièrement. Homologation, DAR, doses et usages réels.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔄</div>
+        <h3>Rotation antiresistance</h3>
+        <p>Logique FRAC/IRAC/HRAC intégrée. Chaque conseil inclut des alternatives de groupes différents pour protéger l'efficacité à long terme.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🐝</div>
+        <h3>Alertes pollinisateurs</h3>
+        <p>Risque abeilles et recommandations horaires automatiques selon le stade phénologique de la culture.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">⚡</div>
+        <h3>Zéro dépendances cloud</h3>
+        <p>API REST pure. Intégration en 5 minutes, pas d'SDK propriétaire, pas de verrouillage fournisseur.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📊</div>
+        <h3>Catalogue filtrable</h3>
+        <p>Recherchez par culture, type d'usage, groupe FRAC ou texte libre. 1 355 produits paginés et interrogeables.</p>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🔑</div>
+        <h3>Clés API sécurisées</h3>
+        <p>Quotas mensuels par plan, SHA-256 hashing, logs de requêtes. Gestion complète depuis votre tableau de bord.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ENDPOINTS -->
+<section class="section endpoints" id="api">
+  <div class="section-inner">
+    <h2 class="section-title" style="color:#fff">Endpoints disponibles</h2>
+    <p class="section-sub" style="color:#8DC97A">Base URL : <code style="font-family:'JetBrains Mono',monospace">https://web-production-0e1ad.up.railway.app</code></p>
+    <div class="endpoint-list">
+      <div class="endpoint">
+        <span class="method">POST</span>
+        <span class="ep-path">/v1/conseil</span>
+        <span class="ep-desc">Conseil phytosanitaire personnalisé avec alternatives et alertes</span>
+      </div>
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <span class="ep-path">/v1/produits</span>
+        <span class="ep-desc">Catalogue complet avec filtres (culture, usage, groupe FRAC…)</span>
+      </div>
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <span class="ep-path">/v1/produits/{id}</span>
+        <span class="ep-desc">Détail complet d'un produit</span>
+      </div>
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <span class="ep-path">/v1/cultures</span>
+        <span class="ep-desc">Liste des 179 cultures indexées</span>
+      </div>
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <span class="ep-path">/v1/groupes</span>
+        <span class="ep-desc">Référentiels FRAC 2025, IRAC 2021, HRAC 2026</span>
+      </div>
+      <div class="endpoint">
+        <span class="method">GET</span>
+        <span class="ep-path">/docs</span>
+        <span class="ep-desc">Documentation interactive avec formulaires de test en ligne</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- AUDIENCE -->
+<section class="section" style="background:var(--mist);">
+  <div class="section-inner">
+    <h2 class="section-title">Conçu pour deux métiers</h2>
+    <p class="section-sub">Que vous soyez technicien terrain ou développeur, AgriSage s'adapte à votre workflow.</p>
+    <div class="audience-split">
+      <div class="audience-card">
+        <h3>🌾 Techniciens & Coopératives</h3>
+        <p>Accédez à des recommandations fiables directement depuis le tableau de bord web, sans code.</p>
+        <ul>
+          <li>Dashboard intuitif avec formulaire de conseil</li>
+          <li>Historique des consultations par session</li>
+          <li>Catalogue produits consultable et filtrable</li>
+          <li>Alertes abeilles et stades phénologiques</li>
+        </ul>
+      </div>
+      <div class="audience-card">
+        <h3>💻 Développeurs & Éditeurs</h3>
+        <p>Intégrez les données ONSSA dans vos applications en quelques lignes.</p>
+        <ul>
+          <li>API REST JSON, documentation complète</li>
+          <li>Clé API en 30 secondes, pas d'OAuth</li>
+          <li>Quotas prévisibles par plan</li>
+          <li>SDKs Python et Node.js disponibles</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="section" id="tarifs">
+  <div class="section-inner">
+    <h2 class="section-title">Tarifs simples et transparents</h2>
+    <p class="section-sub">Commencez gratuitement, montez en charge quand votre usage grandit.</p>
+    <div class="pricing-grid">
+      <div class="plan-card">
+        <div class="plan-name">Gratuit</div>
+        <div class="plan-price">0 <span>MAD/mois</span></div>
+        <div class="plan-reqs">500 requêtes / mois</div>
+        <ul class="plan-features">
+          <li>Tous les endpoints</li>
+          <li>Documentation complète</li>
+          <li>Idéal pour tester</li>
+        </ul>
+        <a href="mailto:ycharhabaili@gmail.com?subject=Clé API Gratuite" class="plan-cta">Obtenir une clé</a>
+      </div>
+      <div class="plan-card featured">
+        <div class="plan-badge">Populaire</div>
+        <div class="plan-name">Growth</div>
+        <div class="plan-price"><sup></sup>Sur devis <span></span></div>
+        <div class="plan-reqs">10 000 requêtes / mois</div>
+        <ul class="plan-features">
+          <li>Tous les endpoints</li>
+          <li>Support par email</li>
+          <li>Logs de requêtes</li>
+          <li>SLA 99.5%</li>
+        </ul>
+        <a href="mailto:ycharhabaili@gmail.com?subject=Plan Growth" class="plan-cta">Nous contacter</a>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">Pro</div>
+        <div class="plan-price"><sup></sup>Sur devis <span></span></div>
+        <div class="plan-reqs">50 000 requêtes / mois</div>
+        <ul class="plan-features">
+          <li>Tous les endpoints</li>
+          <li>Support prioritaire</li>
+          <li>Accès admin complet</li>
+          <li>SLA 99.9%</li>
+        </ul>
+        <a href="mailto:ycharhabaili@gmail.com?subject=Plan Pro" class="plan-cta">Nous contacter</a>
+      </div>
+      <div class="plan-card">
+        <div class="plan-name">Scale</div>
+        <div class="plan-price"><sup></sup>Sur devis <span></span></div>
+        <div class="plan-reqs">300 000 req / mois</div>
+        <ul class="plan-features">
+          <li>Volume illimité possible</li>
+          <li>Onboarding dédié</li>
+          <li>Intégration personnalisée</li>
+          <li>Contrat cadre</li>
+        </ul>
+        <a href="mailto:ycharhabaili@gmail.com?subject=Plan Scale" class="plan-cta">Nous contacter</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-footer">
+  <h2>Prêt à intégrer le conseil phyto ONSSA ?</h2>
+  <p>Clé de test disponible immédiatement. Aucune carte bancaire requise.</p>
+  <a href="mailto:ycharhabaili@gmail.com?subject=Clé API AgriSage" class="btn-white">Demander une clé gratuite</a>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p>© 2025 AgriSage · Conseil phytosanitaire Maroc ·
+    <a href="https://web-production-0e1ad.up.railway.app/docs" target="_blank">Documentation API</a> ·
+    <a href="https://agrisage-production.up.railway.app" target="_blank">Dashboard</a>
+  </p>
+</footer>
+
+</body>
+</html>
