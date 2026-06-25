@@ -1,5 +1,5 @@
-﻿[build]
+[build]
 builder = "nixpacks"
 
 [deploy]
-startCommand = "npx serve dist -l \"
+startCommand = "npx serve dist -l $PORT"
