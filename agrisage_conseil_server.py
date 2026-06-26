@@ -17,7 +17,7 @@ from urllib.parse import urlparse, parse_qs
 
 SDK_VERSION  = '1.0.0'
 API_VERSION  = 'v1'
-DEFAULT_PORT = int(os.environ.get('PORT', 3000))
+DEFAULT_PORT = int(os.environ.get('PORT', 8000))
 DB_PATH      = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'onssa_index.db')
 
 # â”€â”€ FRAC / IRAC / ToxicitÃ© â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
