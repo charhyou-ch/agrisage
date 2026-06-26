@@ -1,1 +1,1 @@
-web: python agrisage_conseil_server.py --port $PORT
+web: python agrisage_conseil_server.py
