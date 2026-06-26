@@ -1,0 +1,2 @@
+[deploy]
+startCommand = "python agrisage_conseil_server.py"
