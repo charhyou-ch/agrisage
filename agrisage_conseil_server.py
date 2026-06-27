@@ -1,4 +1,4 @@
-﻿#!/usr/bin/env python3
+#!/usr/bin/env python3
 """
 AgriSage API â€” Serveur Python stdlib uniquement
 Endpoints :
@@ -20,70 +20,70 @@ API_VERSION  = 'v1'
 DEFAULT_PORT = int(os.environ.get('PORT', 3000))
 DB_PATH      = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'onssa_index.db')
 
-# â”€â”€ FRAC / IRAC / ToxicitÃ© â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+# â”€â”€ FRAC / IRAC / Toxicité â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 FRAC_GROUPS = {
-    'azoxystrobine':    {'groupe':'11','risque':'Ã©levÃ©',     'mecanisme':'Inhibiteurs complexes III (Qo)'},
-    'trifloxystrobine': {'groupe':'11','risque':'Ã©levÃ©',     'mecanisme':'Inhibiteurs complexes III (Qo)'},
-    'pyraclostrobine':  {'groupe':'11','risque':'Ã©levÃ©',     'mecanisme':'Inhibiteurs complexes III (Qo)'},
-    'cyprodinil':       {'groupe':'9', 'risque':'modÃ©rÃ©',    'mecanisme':'Inhibiteurs biosynthÃ¨se acides aminÃ©s'},
-    'pyrimethanil':     {'groupe':'9', 'risque':'modÃ©rÃ©',    'mecanisme':'Inhibiteurs biosynthÃ¨se acides aminÃ©s'},
+    'azoxystrobine':    {'groupe':'11','risque':'élevé',     'mecanisme':'Inhibiteurs complexes III (Qo)'},
+    'trifloxystrobine': {'groupe':'11','risque':'élevé',     'mecanisme':'Inhibiteurs complexes III (Qo)'},
+    'pyraclostrobine':  {'groupe':'11','risque':'élevé',     'mecanisme':'Inhibiteurs complexes III (Qo)'},
+    'cyprodinil':       {'groupe':'9', 'risque':'modéré',    'mecanisme':'Inhibiteurs biosynthèse acides aminés'},
+    'pyrimethanil':     {'groupe':'9', 'risque':'modéré',    'mecanisme':'Inhibiteurs biosynthèse acides aminés'},
     'fludioxonil':      {'groupe':'12','risque':'faible',    'mecanisme':'Inhibiteurs transduction signal'},
-    'difÃ©noconazole':   {'groupe':'3', 'risque':'modÃ©rÃ©',    'mecanisme':'Inhibiteurs dÃ©mÃ©thylation (DMI)'},
-    'tebuconazole':     {'groupe':'3', 'risque':'modÃ©rÃ©',    'mecanisme':'Inhibiteurs dÃ©mÃ©thylation (DMI)'},
-    'penconazole':      {'groupe':'3', 'risque':'modÃ©rÃ©',    'mecanisme':'Inhibiteurs dÃ©mÃ©thylation (DMI)'},
-    'fluopyram':        {'groupe':'7', 'risque':'modÃ©rÃ©',    'mecanisme':'Inhibiteurs succinate dÃ©shydrogÃ©nase'},
-    'boscalid':         {'groupe':'7', 'risque':'modÃ©rÃ©',    'mecanisme':'Inhibiteurs succinate dÃ©shydrogÃ©nase'},
+    'difénoconazole':   {'groupe':'3', 'risque':'modéré',    'mecanisme':'Inhibiteurs déméthylation (DMI)'},
+    'tebuconazole':     {'groupe':'3', 'risque':'modéré',    'mecanisme':'Inhibiteurs déméthylation (DMI)'},
+    'penconazole':      {'groupe':'3', 'risque':'modéré',    'mecanisme':'Inhibiteurs déméthylation (DMI)'},
+    'fluopyram':        {'groupe':'7', 'risque':'modéré',    'mecanisme':'Inhibiteurs succinate déshydrogénase'},
+    'boscalid':         {'groupe':'7', 'risque':'modéré',    'mecanisme':'Inhibiteurs succinate déshydrogénase'},
     'mancozebe':        {'groupe':'M3','risque':'faible',    'mecanisme':'Contact multi-site'},
-    'mancozÃ¨be':        {'groupe':'M3','risque':'faible',    'mecanisme':'Contact multi-site'},
+    'mancozèbe':        {'groupe':'M3','risque':'faible',    'mecanisme':'Contact multi-site'},
     'folpel':           {'groupe':'M4','risque':'faible',    'mecanisme':'Contact multi-site'},
-    'cymoxanil':        {'groupe':'27','risque':'modÃ©rÃ©',    'mecanisme':'Inhibiteurs acides nuclÃ©iques'},
-    'dimÃ©thomorphe':    {'groupe':'40','risque':'modÃ©rÃ©',    'mecanisme':'Inhibiteurs paroi cellulaire'},
-    'dimethomorphe':    {'groupe':'40','risque':'modÃ©rÃ©',    'mecanisme':'Inhibiteurs paroi cellulaire'},
-    'mÃ©talaxyl':        {'groupe':'4', 'risque':'trÃ¨s Ã©levÃ©','mecanisme':'Inhibiteurs polymÃ©rase ARN'},
-    'metalaxyl':        {'groupe':'4', 'risque':'trÃ¨s Ã©levÃ©','mecanisme':'Inhibiteurs polymÃ©rase ARN'},
-    'cyflufÃ©namide':    {'groupe':'U6','risque':'faible',    'mecanisme':'Inhibiteurs cÃ©tol-rÃ©ductases'},
+    'cymoxanil':        {'groupe':'27','risque':'modéré',    'mecanisme':'Inhibiteurs acides nucléiques'},
+    'diméthomorphe':    {'groupe':'40','risque':'modéré',    'mecanisme':'Inhibiteurs paroi cellulaire'},
+    'dimethomorphe':    {'groupe':'40','risque':'modéré',    'mecanisme':'Inhibiteurs paroi cellulaire'},
+    'métalaxyl':        {'groupe':'4', 'risque':'très élevé','mecanisme':'Inhibiteurs polymérase ARN'},
+    'metalaxyl':        {'groupe':'4', 'risque':'très élevé','mecanisme':'Inhibiteurs polymérase ARN'},
+    'cyflufénamide':    {'groupe':'U6','risque':'faible',    'mecanisme':'Inhibiteurs cétol-réductases'},
     'iprodione':        {'groupe':'2', 'risque':'faible',    'mecanisme':'Inhibiteurs transduction signal'},
-    'spiroxamine':      {'groupe':'5', 'risque':'modÃ©rÃ©',    'mecanisme':'Inhibiteurs biosynthÃ¨se stÃ©rols'},
+    'spiroxamine':      {'groupe':'5', 'risque':'modéré',    'mecanisme':'Inhibiteurs biosynthèse stérols'},
 }
 IRAC_GROUPS = {
-    'abamectine':           {'groupe':'6',  'risque':'modÃ©rÃ©','mecanisme':'Modulateurs canaux Cl glutamate'},
-    'lambda cyhalothrine':  {'groupe':'3A', 'risque':'Ã©levÃ©', 'mecanisme':'Modulateurs canaux Na'},
-    'cypermÃ©thrine':        {'groupe':'3A', 'risque':'Ã©levÃ©', 'mecanisme':'Modulateurs canaux Na'},
-    'deltamethrine':        {'groupe':'3B', 'risque':'Ã©levÃ©', 'mecanisme':'Modulateurs canaux Na'},
-    'chlorantraniliprole':  {'groupe':'28', 'risque':'faible','mecanisme':'Modulateurs rÃ©cepteurs ryanodine'},
-    'chloranthraniliprole': {'groupe':'28', 'risque':'faible','mecanisme':'Modulateurs rÃ©cepteurs ryanodine'},
-    'spinosad':             {'groupe':'5',  'risque':'faible','mecanisme':'Modulateurs rÃ©cepteurs nAChR'},
-    'spinetoram':           {'groupe':'5',  'risque':'faible','mecanisme':'Modulateurs rÃ©cepteurs nAChR'},
-    'imidaclopride':        {'groupe':'4A', 'risque':'Ã©levÃ©', 'mecanisme':'Agonistes nAChR'},
-    'thiamÃ©toxame':         {'groupe':'4A', 'risque':'Ã©levÃ©', 'mecanisme':'Agonistes nAChR'},
-    'acetamipride':         {'groupe':'4A', 'risque':'Ã©levÃ©', 'mecanisme':'Agonistes nAChR'},
-    'pyriproxyfÃ¨ne':        {'groupe':'7C', 'risque':'faible','mecanisme':'MimÃ©tiques hormone juvÃ©nile'},
-    'spirotÃ©tramat':        {'groupe':'23', 'risque':'faible','mecanisme':'Inhibiteurs ACCase'},
-    'etoxazole':            {'groupe':'10B','risque':'faible','mecanisme':'Inhibiteurs biosynthÃ¨se chitine'},
+    'abamectine':           {'groupe':'6',  'risque':'modéré','mecanisme':'Modulateurs canaux Cl glutamate'},
+    'lambda cyhalothrine':  {'groupe':'3A', 'risque':'élevé', 'mecanisme':'Modulateurs canaux Na'},
+    'cyperméthrine':        {'groupe':'3A', 'risque':'élevé', 'mecanisme':'Modulateurs canaux Na'},
+    'deltamethrine':        {'groupe':'3B', 'risque':'élevé', 'mecanisme':'Modulateurs canaux Na'},
+    'chlorantraniliprole':  {'groupe':'28', 'risque':'faible','mecanisme':'Modulateurs récepteurs ryanodine'},
+    'chloranthraniliprole': {'groupe':'28', 'risque':'faible','mecanisme':'Modulateurs récepteurs ryanodine'},
+    'spinosad':             {'groupe':'5',  'risque':'faible','mecanisme':'Modulateurs récepteurs nAChR'},
+    'spinetoram':           {'groupe':'5',  'risque':'faible','mecanisme':'Modulateurs récepteurs nAChR'},
+    'imidaclopride':        {'groupe':'4A', 'risque':'élevé', 'mecanisme':'Agonistes nAChR'},
+    'thiamétoxame':         {'groupe':'4A', 'risque':'élevé', 'mecanisme':'Agonistes nAChR'},
+    'acetamipride':         {'groupe':'4A', 'risque':'élevé', 'mecanisme':'Agonistes nAChR'},
+    'pyriproxyfène':        {'groupe':'7C', 'risque':'faible','mecanisme':'Mimétiques hormone juvénile'},
+    'spirotétramat':        {'groupe':'23', 'risque':'faible','mecanisme':'Inhibiteurs ACCase'},
+    'etoxazole':            {'groupe':'10B','risque':'faible','mecanisme':'Inhibiteurs biosynthèse chitine'},
 }
 TOXICITE_ABEILLES = {
-    'lambda cyhalothrine':'Ã©levÃ©', 'cypermÃ©thrine':'Ã©levÃ©', 'deltamethrine':'Ã©levÃ©',
-    'imidaclopride':'Ã©levÃ©',       'thiamÃ©toxame':'Ã©levÃ©',  'clothianidine':'Ã©levÃ©',
-    'acetamipride':'modÃ©rÃ©',       'spinosad':'modÃ©rÃ©',     'abamectine':'modÃ©rÃ©',
-    'spirotÃ©tramat':'modÃ©rÃ©',
+    'lambda cyhalothrine':'élevé', 'cyperméthrine':'élevé', 'deltamethrine':'élevé',
+    'imidaclopride':'élevé',       'thiamétoxame':'élevé',  'clothianidine':'élevé',
+    'acetamipride':'modéré',       'spinosad':'modéré',     'abamectine':'modéré',
+    'spirotétramat':'modéré',
     'azoxystrobine':'faible',      'cyprodinil':'faible',   'fludioxonil':'faible',
-    'difÃ©noconazole':'faible',     'mancozÃ¨be':'faible',    'mancozebe':'faible',
-    'pyriproxyfÃ¨ne':'faible',      'etoxazole':'faible',    'boscalid':'faible',
+    'difénoconazole':'faible',     'mancozèbe':'faible',    'mancozebe':'faible',
+    'pyriproxyfène':'faible',      'etoxazole':'faible',    'boscalid':'faible',
     'cymoxanil':'faible',          'fluopyram':'faible',
-    'chlorantraniliprole':'trÃ¨s faible', 'chloranthraniliprole':'trÃ¨s faible',
+    'chlorantraniliprole':'très faible', 'chloranthraniliprole':'très faible',
 }
 ROTATION_NOTES = {
     '3' :'Alterner avec FRAC 7, 9 ou 27. Max 2 applications/saison.',
     '7' :'Alterner avec FRAC 3 ou 11. Max 2 applications/saison.',
     '9' :'Alterner avec FRAC 3 ou 40. Max 2 applications/saison.',
-    '11':'Risque Ã©levÃ©. Max 1 application consÃ©cutive. Alterner avec FRAC 3 ou 7.',
-    '4' :'Risque TRES ELEVE. Max 1 application/saison. Toujours en mÃ©lange.',
-    '27':'Bon choix anti-rÃ©sistance strobilurines. Alterner avec FRAC 40.',
+    '11':'Risque élevé. Max 1 application consécutive. Alterner avec FRAC 3 ou 7.',
+    '4' :'Risque TRES ELEVE. Max 1 application/saison. Toujours en mélange.',
+    '27':'Bon choix anti-résistance strobilurines. Alterner avec FRAC 40.',
     '40':'Alterner avec FRAC 27 ou M3.',
     'M3':'Contact multi-site. Rotation libre. Excellent tank-mix.',
-    '28':'Bon choix anti-rÃ©sistance. Max 2 applications/saison.',
-    '3A':'Risque Ã©levÃ© pyrethrinoides. Alterner avec IRAC 5, 6 ou 28.',
-    '4A':'Risque trÃ¨s Ã©levÃ© neonicotinoides. Alterner avec IRAC 5 ou 28.',
+    '28':'Bon choix anti-résistance. Max 2 applications/saison.',
+    '3A':'Risque élevé pyrethrinoides. Alterner avec IRAC 5, 6 ou 28.',
+    '4A':'Risque très élevé neonicotinoides. Alterner avec IRAC 5 ou 28.',
     '6' :'Alterner avec IRAC 28 ou 5. Max 2 applications/saison.',
 }
 STADES_VALIDES   = {'germination','levee','vegetation','floraison','fructification','recolte','post-recolte'}
@@ -187,12 +187,12 @@ def generer_conseil(params):
         score = 100
         if frac and frac['groupe'] in hist_frac: score -= 60
         if irac and irac['groupe'] in hist_irac: score -= 60
-        if ra == 'Ã©levÃ©'  and stade == 'floraison': score -= 45
-        if ra == 'modÃ©rÃ©' and stade == 'floraison': score -= 20
+        if ra == 'élevé'  and stade == 'floraison': score -= 45
+        if ra == 'modéré' and stade == 'floraison': score -= 20
         if tox == 'Ia': score -= 30
         if tox == 'Ib': score -= 15
         if frac and frac['groupe'] not in hist_frac: score += 10
-        if ra == 'trÃ¨s faible': score += 12
+        if ra == 'très faible': score += 12
         elif ra == 'faible':    score += 6
         d = r.get('dar_jours')
         if d and d <= 3: score += 5
@@ -204,9 +204,9 @@ def generer_conseil(params):
     alertes = []
     if stade == 'floraison':
         ra = best['_ra']
-        if   ra == 'Ã©levÃ©':  alertes.append('DANGEREUX abeilles. Application interdite en floraison.')
-        elif ra == 'modÃ©rÃ©': alertes.append('Risque modÃ©rÃ© pollinisateurs. Appliquer aprÃ¨s 19h ou avant 6h.')
-        else:                alertes.append('Floraison : appliquer de prÃ©fÃ©rence aprÃ¨s 19h.')
+        if   ra == 'élevé':  alertes.append('DANGEREUX abeilles. Application interdite en floraison.')
+        elif ra == 'modéré': alertes.append('Risque modéré pollinisateurs. Appliquer après 19h ou avant 6h.')
+        else:                alertes.append('Floraison : appliquer de préférence après 19h.')
     if best['_f'] and best['_f']['groupe'] in hist_frac:
         alertes.append('FRAC ' + best['_f']['groupe'] + ' deja utilise. Risque resistance.')
     if best['_i'] and best['_i']['groupe'] in hist_irac:
@@ -269,15 +269,15 @@ def generer_conseil(params):
 
 def get_produits(qs):
     """
-    ParamÃ¨tres query string :
-      culture    â€” filtre par culture homologuÃ©e (LIKE)
+    Paramètres query string :
+      culture    â€” filtre par culture homologuée (LIKE)
       usage      â€” type : fongicide|insecticide|herbicide|acaricide|nematicide|...
-      ma         â€” recherche matiÃ¨re active (LIKE)
-      statut     â€” homologue (dÃ©faut) | tous
+      ma         â€” recherche matière active (LIKE)
+      statut     â€” homologue (défaut) | tous
       groupe_fracâ€” filtre par groupe FRAC
       groupe_iracâ€” filtre par groupe IRAC
       q          â€” recherche libre sur nom_commercial + matiere_active
-      page       â€” numÃ©ro de page (dÃ©faut 1)
+      page       â€” numéro de page (défaut 1)
     """
     culture     = qs.get('culture',     [None])[0]
     usage       = qs.get('usage',       [None])[0]
@@ -326,7 +326,7 @@ def get_produits(qs):
         args.extend(['%' + q.lower() + '%', '%' + q.lower() + '%'])
 
     if groupe_frac:
-        # Filtrer par groupe FRAC via la matiÃ¨re active
+        # Filtrer par groupe FRAC via la matière active
         ma_keys = [k for k, v in FRAC_GROUPS.items() if v['groupe'] == groupe_frac]
         if ma_keys:
             placeholders = ' OR '.join(['LOWER(p.matiere_active) LIKE ?' for _ in ma_keys])
@@ -347,12 +347,12 @@ def get_produits(qs):
     sql_count += ' ' + sql_where
     total = cur.execute(sql_count, args).fetchone()[0]
 
-    # DonnÃ©es paginÃ©es
+    # Données paginées
     offset = (page - 1) * PAGE_SIZE
     sql_data = sql_select + ' ' + sql_where + ' ORDER BY p.nom_commercial ASC LIMIT ? OFFSET ?'
     rows = [dict(r) for r in cur.execute(sql_data, args + [PAGE_SIZE, offset]).fetchall()]
 
-    # Enrichir avec cultures homologuÃ©es et groupes FRAC/IRAC
+    # Enrichir avec cultures homologuées et groupes FRAC/IRAC
     for p in rows:
         enrich_produit(p)
         cultures_r = cur.execute(
@@ -405,7 +405,7 @@ def get_produit_by_id(produit_id):
     p['cultures_homologuees'] = list({u['culture'] for u in usages if u['culture']})
     p['cultures_homologuees'].sort()
 
-    # Infos FRAC/IRAC complÃ¨tes
+    # Infos FRAC/IRAC complètes
     frac = get_frac(p.get('matiere_active',''))
     irac = get_irac(p.get('matiere_active',''))
     if frac:
@@ -420,9 +420,9 @@ def get_produit_by_id(produit_id):
 
 def get_cultures(qs):
     """
-    ParamÃ¨tres :
+    Paramètres :
       q    â€” recherche partielle sur nom_fr
-      page â€” numÃ©ro de page
+      page â€” numéro de page
     """
     q = qs.get('q', [None])[0]
     try:
@@ -460,9 +460,9 @@ def get_cultures(qs):
 
 def get_matieres_actives(qs):
     """
-    ParamÃ¨tres :
+    Paramètres :
       q    â€” recherche partielle sur nom
-      page â€” numÃ©ro de page
+      page â€” numéro de page
     """
     q = qs.get('q', [None])[0]
     try:
@@ -473,7 +473,7 @@ def get_matieres_actives(qs):
     conn = db()
     cur  = conn.cursor()
 
-    # Essayer la table matieres_actives si elle existe, sinon dÃ©river des produits
+    # Essayer la table matieres_actives si elle existe, sinon dériver des produits
     tables = [r[0] for r in cur.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()]
 
     if 'matieres_actives' in tables:
@@ -490,7 +490,7 @@ def get_matieres_actives(qs):
             args + [PAGE_SIZE, offset]
         ).fetchall()]
     else:
-        # DÃ©river depuis la colonne matiere_active de produits
+        # Dériver depuis la colonne matiere_active de produits
         sql_where = "WHERE matiere_active IS NOT NULL AND matiere_active != ''"
         args = []
         if q:
@@ -530,7 +530,7 @@ def get_matieres_actives(qs):
 
 def generer_conseil_batch(items):
     """
-    Accepte une liste de requÃªtes conseil et retourne une liste de rÃ©sultats.
+    Accepte une liste de requÃªtes conseil et retourne une liste de résultats.
     Chaque item doit avoir : culture, ravageur, stade
     Optionnel : dar_max, historique_frac, historique_irac, nb_alternatives, ref
     """
@@ -652,7 +652,7 @@ class AgriSageHandler(BaseHTTPRequestHandler):
                     return self.send_json(404, {'error':{
                         'code':'NOT_FOUND',
                         'message':'Produit ' + str(produit_id) + ' introuvable.',
-                        'suggestion':'Consultez GET /v1/produits pour la liste complÃ¨te.',
+                        'suggestion':'Consultez GET /v1/produits pour la liste complète.',
                     }})
                 elapsed = (datetime.now() - start).total_seconds() * 1000
                 return self.send_json(200, result, {'X-Response-Time':'{:.0f}ms'.format(elapsed)})
