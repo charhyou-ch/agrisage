@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+﻿import { useState, useEffect, useCallback } from "react";
 
-// ── Design tokens AgriSage ─────────────────────────────────────────────────
+// â”€â”€ Design tokens AgriSage â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const C = {
   vert:      "#27500A",
   vertMid:   "#3D7A18",
@@ -17,9 +17,9 @@ const C = {
   texte:     "#1A2E0A",
 };
 
-const API_BASE = "https://web-production-0e1ad.up.railway.app";
+const API_BASE = "https://agrisage-production-9611.up.railway.app";
 
-// ── Utilitaires ────────────────────────────────────────────────────────────
+// â”€â”€ Utilitaires â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function apiCall(endpoint, options = {}) {
   const key = localStorage.getItem("agrisage_key") || "as_test_demo";
   return fetch(`${API_BASE}${endpoint}`, {
@@ -48,18 +48,18 @@ function Badge({ color, bg, children }) {
 
 function RisqueBadge({ valeur }) {
   const map = {
-    "élevé":      { bg: C.rougeFond, color: C.rouge },
-    "très élevé": { bg: C.rougeFond, color: C.rouge },
-    "modéré":     { bg: C.ambreFond, color: C.ambre },
+    "Ã©levÃ©":      { bg: C.rougeFond, color: C.rouge },
+    "trÃ¨s Ã©levÃ©": { bg: C.rougeFond, color: C.rouge },
+    "modÃ©rÃ©":     { bg: C.ambreFond, color: C.ambre },
     "faible":     { bg: C.cremeBord, color: C.vertMid },
-    "très faible":{ bg: C.cremeBord, color: C.vertMid },
+    "trÃ¨s faible":{ bg: C.cremeBord, color: C.vertMid },
   };
   const s = map[valeur] || { bg: C.cremeBord, color: C.gris };
-  return <Badge bg={s.bg} color={s.color}>{valeur || "—"}</Badge>;
+  return <Badge bg={s.bg} color={s.color}>{valeur || "â€”"}</Badge>;
 }
 
 function Alerte({ texte }) {
-  const isUrgent = texte.startsWith("⚠️") || texte.startsWith("DANGER");
+  const isUrgent = texte.startsWith("âš ï¸") || texte.startsWith("DANGER");
   return (
     <div style={{
       background: isUrgent ? C.rougeFond : C.ambreFond,
@@ -73,18 +73,18 @@ function Alerte({ texte }) {
       gap: 8,
       alignItems: "flex-start",
     }}>
-      <span>{isUrgent ? "⚠️" : "🌿"}</span>
-      <span>{texte.replace("⚠️","").replace("🌿","").trim()}</span>
+      <span>{isUrgent ? "âš ï¸" : "ðŸŒ¿"}</span>
+      <span>{texte.replace("âš ï¸","").replace("ðŸŒ¿","").trim()}</span>
     </div>
   );
 }
 
-// ── Header ─────────────────────────────────────────────────────────────────
+// â”€â”€ Header â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Header({ onglet, setOnglet }) {
   const tabs = [
-    { id: "conseil",  label: "🌱 Conseil", },
-    { id: "produits", label: "📦 Produits", },
-    { id: "historique", label: "📋 Historique", },
+    { id: "conseil",  label: "ðŸŒ± Conseil", },
+    { id: "produits", label: "ðŸ“¦ Produits", },
+    { id: "historique", label: "ðŸ“‹ Historique", },
   ];
   return (
     <header style={{
@@ -101,7 +101,7 @@ function Header({ onglet, setOnglet }) {
       zIndex: 100,
     }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginRight: 16 }}>
-        <span style={{ fontSize: 26 }}>🌿</span>
+        <span style={{ fontSize: 26 }}>ðŸŒ¿</span>
         <div>
           <div style={{ fontWeight: 800, fontSize: 18, letterSpacing: 0.5 }}>AgriSage</div>
           <div style={{ fontSize: 10, opacity: 0.7, letterSpacing: 1, textTransform: "uppercase" }}>
@@ -151,21 +151,21 @@ function KeyInput() {
       background: "rgba(255,255,255,.12)", color: "rgba(255,255,255,.85)",
       border: "1px solid rgba(255,255,255,.2)", borderRadius: 6,
       padding: "4px 12px", cursor: "pointer", fontSize: 12,
-    }}>🔑 {key.slice(0, 18)}…</button>
+    }}>ðŸ”‘ {key.slice(0, 18)}â€¦</button>
   );
 }
 
-// ── Onglet Conseil ─────────────────────────────────────────────────────────
+// â”€â”€ Onglet Conseil â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 const CULTURES_FREQ = ["tomate","vigne","agrumes","fraisier","pomme de terre",
-  "poivron","concombre","melon","pastèque","blé tendre","orge","maïs",
-  "olivier","rosacées","laitue","carotte","oignon","artichaut","piment"];
+  "poivron","concombre","melon","pastÃ¨que","blÃ© tendre","orge","maÃ¯s",
+  "olivier","rosacÃ©es","laitue","carotte","oignon","artichaut","piment"];
 
 const RAVAGEURS_FREQ = {
-  fongicide: ["botrytis","mildiou","oïdium","alternariose","fusariose",
+  fongicide: ["botrytis","mildiou","oÃ¯dium","alternariose","fusariose",
     "cladosporiose","septoriose","anthracnose","pourriture grise"],
   insecticide: ["tuta absoluta","puceron","mouche mineuse","aleurode",
     "thrips","cochenille","acarien","noctuelles","mineuse"],
-  herbicide: ["adventices graminées","adventices dicotylédones","ray-grass"],
+  herbicide: ["adventices graminÃ©es","adventices dicotylÃ©dones","ray-grass"],
 };
 
 const STADES = ["germination","levee","vegetation","floraison",
@@ -245,7 +245,7 @@ function OngletConseil({ addHistorique }) {
           {ravageursSuggeres.map(r => <option key={r} value={r} />)}
         </datalist>
 
-        <Label>Stade phénologique *</Label>
+        <Label>Stade phÃ©nologique *</Label>
         <select value={form.stade} onChange={e => set("stade", e.target.value)}
           style={inputStyle}>
           {STADES.map(s => <option key={s} value={s}>{s.charAt(0).toUpperCase()+s.slice(1)}</option>)}
@@ -268,10 +268,10 @@ function OngletConseil({ addHistorique }) {
           </div>
         </div>
 
-        <Label>Groupes FRAC déjà utilisés</Label>
+        <Label>Groupes FRAC dÃ©jÃ  utilisÃ©s</Label>
         <input value={form.historique_frac}
           onChange={e => set("historique_frac", e.target.value)}
-          placeholder="ex: 11, 3, M3 (séparés par virgule)"
+          placeholder="ex: 11, 3, M3 (sÃ©parÃ©s par virgule)"
           style={inputStyle} />
 
         {error && (
@@ -288,28 +288,28 @@ function OngletConseil({ addHistorique }) {
           cursor: loading ? "not-allowed" : "pointer",
           marginTop: 4, transition: "background .15s",
         }}>
-          {loading ? "⏳ Analyse en cours..." : "🌱 Générer le conseil"}
+          {loading ? "â³ Analyse en cours..." : "ðŸŒ± GÃ©nÃ©rer le conseil"}
         </button>
       </div>
 
-      {/* Résultat */}
+      {/* RÃ©sultat */}
       <div>
         {!result && !loading && (
           <div style={{ background: C.creme, borderRadius: 16, padding: 48,
             textAlign: "center", border: `2px dashed ${C.cremeBord}` }}>
-            <div style={{ fontSize: 48, marginBottom: 12 }}>🌿</div>
+            <div style={{ fontSize: 48, marginBottom: 12 }}>ðŸŒ¿</div>
             <div style={{ color: C.gris, fontSize: 15 }}>
               Remplissez le formulaire et cliquez<br />
-              <strong style={{ color: C.vert }}>Générer le conseil</strong> pour obtenir<br />
-              une recommandation basée sur l'index ONSSA.
+              <strong style={{ color: C.vert }}>GÃ©nÃ©rer le conseil</strong> pour obtenir<br />
+              une recommandation basÃ©e sur l'index ONSSA.
             </div>
           </div>
         )}
         {loading && (
           <div style={{ background: C.creme, borderRadius: 16, padding: 48,
             textAlign: "center", border: `1px solid ${C.cremeBord}` }}>
-            <div style={{ fontSize: 36, marginBottom: 12 }}>⏳</div>
-            <div style={{ color: C.gris }}>Consultation de l'index ONSSA…</div>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>â³</div>
+            <div style={{ color: C.gris }}>Consultation de l'index ONSSAâ€¦</div>
           </div>
         )}
         {result && <ResultatConseil data={result} />}
@@ -330,7 +330,7 @@ function ResultatConseil({ data }) {
           <div>
             <div style={{ fontSize: 11, color: C.vertClair, fontWeight: 700,
               letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 }}>
-              Produit recommandé · ONSSA ✓
+              Produit recommandÃ© Â· ONSSA âœ“
             </div>
             <h2 style={{ fontSize: 22, fontWeight: 800, color: C.texte, margin: 0 }}>
               {data.produit}
@@ -342,31 +342,31 @@ function ResultatConseil({ data }) {
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: 11, color: C.gris, marginBottom: 4 }}>DAR</div>
             <div style={{ fontSize: 28, fontWeight: 800, color: C.vert }}>
-              {data.dar ?? "—"}
+              {data.dar ?? "â€”"}
             </div>
             <div style={{ fontSize: 11, color: C.gris }}>jours</div>
           </div>
         </div>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: 12, marginBottom: 16 }}>
-          <InfoBox label="Dose" value={data.dose || "—"} />
-          <InfoBox label="Formulation" value={data.formulation || "—"} />
-          <InfoBox label="Groupe FRAC" value={data.groupe_frac || "—"} />
-          <InfoBox label="Groupe IRAC" value={data.groupe_irac || "—"} />
+          <InfoBox label="Dose" value={data.dose || "â€”"} />
+          <InfoBox label="Formulation" value={data.formulation || "â€”"} />
+          <InfoBox label="Groupe FRAC" value={data.groupe_frac || "â€”"} />
+          <InfoBox label="Groupe IRAC" value={data.groupe_irac || "â€”"} />
         </div>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: data.alertes?.length ? 12 : 0 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: C.gris }}>
-            <span>🐝 Abeilles :</span>
+            <span>ðŸ Abeilles :</span>
             <RisqueBadge valeur={data.risque_abeilles} />
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: C.gris }}>
-            <span>⚡ Résistance :</span>
+            <span>âš¡ RÃ©sistance :</span>
             <RisqueBadge valeur={data.risque_resistance} />
           </div>
           {data.valable_jusquau && (
             <div style={{ fontSize: 13, color: C.gris }}>
-              📅 Homologué jusqu'au {data.valable_jusquau}
+              ðŸ“… HomologuÃ© jusqu'au {data.valable_jusquau}
             </div>
           )}
         </div>
@@ -376,7 +376,7 @@ function ResultatConseil({ data }) {
         {data.usage_homologue && (
           <div style={{ marginTop: 12, padding: "8px 12px", background: C.creme,
             borderRadius: 8, fontSize: 12, color: C.gris }}>
-            <strong>Usage homologué :</strong> {data.usage_homologue}
+            <strong>Usage homologuÃ© :</strong> {data.usage_homologue}
           </div>
         )}
 
@@ -393,7 +393,7 @@ function ResultatConseil({ data }) {
         <div style={{ background: C.blanc, borderRadius: 16, padding: 24,
           border: `1px solid ${C.cremeBord}` }}>
           <h3 style={{ color: C.vert, fontSize: 15, fontWeight: 700, marginBottom: 16 }}>
-            ↺ Alternatives de rotation ({data.alternatives.length})
+            â†º Alternatives de rotation ({data.alternatives.length})
           </h3>
           <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {data.alternatives.map((alt, i) => (
@@ -406,21 +406,21 @@ function ResultatConseil({ data }) {
                   <div style={{ fontWeight: 700, fontSize: 14, color: C.texte }}>{alt.produit}</div>
                   <div style={{ fontSize: 12, color: C.gris }}>{alt.matiere_active}</div>
                 </div>
-                <Badge>{alt.groupe_frac ? `FRAC ${alt.groupe_frac}` : alt.groupe_irac ? `IRAC ${alt.groupe_irac}` : "—"}</Badge>
+                <Badge>{alt.groupe_frac ? `FRAC ${alt.groupe_frac}` : alt.groupe_irac ? `IRAC ${alt.groupe_irac}` : "â€”"}</Badge>
                 <div style={{ fontSize: 12, color: C.gris, textAlign: "right" }}>
-                  {alt.dar != null ? `DAR ${alt.dar}j` : "DAR —"}
+                  {alt.dar != null ? `DAR ${alt.dar}j` : "DAR â€”"}
                 </div>
-                <div style={{ fontSize: 12, color: C.gris }}>{alt.dose || "—"}</div>
+                <div style={{ fontSize: 12, color: C.gris }}>{alt.dose || "â€”"}</div>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Méta */}
+      {/* MÃ©ta */}
       <div style={{ fontSize: 11, color: C.grisClair, textAlign: "right" }}>
-        conseil_id: {data.conseil_id} · {data.timestamp?.slice(0,19).replace("T"," ")}
-        · {data.meta?.nb_produits_trouves} produits analysés
+        conseil_id: {data.conseil_id} Â· {data.timestamp?.slice(0,19).replace("T"," ")}
+        Â· {data.meta?.nb_produits_trouves} produits analysÃ©s
       </div>
     </div>
   );
@@ -436,7 +436,7 @@ function InfoBox({ label, value }) {
   );
 }
 
-// ── Onglet Produits ────────────────────────────────────────────────────────
+// â”€â”€ Onglet Produits â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function OngletProduits() {
   const [filtres, setFiltres] = useState({ culture: "", usage: "", q: "", groupe_frac: "" });
   const [data, setData] = useState(null);
@@ -474,7 +474,7 @@ function OngletProduits() {
         <div>
           <Label>Recherche libre</Label>
           <input value={filtres.q} onChange={e => setF("q", e.target.value)}
-            placeholder="Nom commercial, matière active..." style={inputStyle} />
+            placeholder="Nom commercial, matiÃ¨re active..." style={inputStyle} />
         </div>
         <div>
           <Label>Culture</Label>
@@ -490,7 +490,7 @@ function OngletProduits() {
             <option value="insecticide">Insecticide</option>
             <option value="herbicide">Herbicide</option>
             <option value="acaricide">Acaricide</option>
-            <option value="nematicide">Nématicide</option>
+            <option value="nematicide">NÃ©maticide</option>
           </select>
         </div>
         <div>
@@ -504,12 +504,12 @@ function OngletProduits() {
         {/* Liste */}
         <div>
           {loading && (
-            <div style={{ textAlign: "center", padding: 40, color: C.gris }}>⏳ Chargement…</div>
+            <div style={{ textAlign: "center", padding: 40, color: C.gris }}>â³ Chargementâ€¦</div>
           )}
           {data && !loading && (
             <>
               <div style={{ fontSize: 13, color: C.gris, marginBottom: 12 }}>
-                <strong style={{ color: C.texte }}>{data.pagination?.total}</strong> produits ·
+                <strong style={{ color: C.texte }}>{data.pagination?.total}</strong> produits Â·
                 page {data.pagination?.page}/{data.pagination?.pages_total}
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
@@ -527,7 +527,7 @@ function OngletProduits() {
                         {p.nom_commercial}
                       </div>
                       <div style={{ fontSize: 12, color: C.gris, marginTop: 2 }}>
-                        {p.matiere_active?.slice(0, 60)}{p.matiere_active?.length > 60 ? "…" : ""}
+                        {p.matiere_active?.slice(0, 60)}{p.matiere_active?.length > 60 ? "â€¦" : ""}
                       </div>
                       {p.cultures_homologuees?.length > 0 && (
                         <div style={{ fontSize: 11, color: C.grisClair, marginTop: 3 }}>
@@ -542,7 +542,7 @@ function OngletProduits() {
                            color={p.type_produit === "fongicide" ? C.vertMid :
                                   p.type_produit?.includes("insecticide") ? C.ambre :
                                   p.type_produit === "herbicide" ? "#3D57C2" : C.gris}>
-                      {p.type_produit || "—"}
+                      {p.type_produit || "â€”"}
                     </Badge>
                     {p.groupe_frac && <Badge>FRAC {p.groupe_frac}</Badge>}
                     <RisqueBadge valeur={p.risque_abeilles} />
@@ -552,18 +552,18 @@ function OngletProduits() {
 
               {/* Pagination */}
               <div style={{ display: "flex", gap: 8, marginTop: 16, justifyContent: "center" }}>
-                <PaginBtn disabled={page===1} onClick={() => setPage(p=>p-1)}>← Précédent</PaginBtn>
+                <PaginBtn disabled={page===1} onClick={() => setPage(p=>p-1)}>â† PrÃ©cÃ©dent</PaginBtn>
                 <span style={{ padding: "6px 14px", fontSize: 13, color: C.gris }}>
                   Page {page} / {data.pagination?.pages_total}
                 </span>
                 <PaginBtn disabled={page>=data.pagination?.pages_total}
-                  onClick={() => setPage(p=>p+1)}>Suivant →</PaginBtn>
+                  onClick={() => setPage(p=>p+1)}>Suivant â†’</PaginBtn>
               </div>
             </>
           )}
         </div>
 
-        {/* Détail */}
+        {/* DÃ©tail */}
         {selectedProduit && (
           <div style={{ background: C.blanc, borderRadius: 16, padding: 24,
             border: `1px solid ${C.cremeBord}`, position: "sticky", top: 80,
@@ -574,7 +574,7 @@ function OngletProduits() {
               </h3>
               <button onClick={() => setSelectedProduit(null)} style={{
                 background: "none", border: "none", fontSize: 18,
-                cursor: "pointer", color: C.gris }}>✕</button>
+                cursor: "pointer", color: C.gris }}>âœ•</button>
             </div>
             <div style={{ fontSize: 13, color: C.gris, marginBottom: 8 }}>
               {selectedProduit.matiere_active}
@@ -586,10 +586,10 @@ function OngletProduits() {
               <RisqueBadge valeur={selectedProduit.risque_abeilles} />
             </div>
             <div style={{ fontSize: 12, color: C.gris, marginBottom: 4 }}>
-              <strong>Détenteur :</strong> {selectedProduit.detenteur}
+              <strong>DÃ©tenteur :</strong> {selectedProduit.detenteur}
             </div>
             <div style={{ fontSize: 12, color: C.gris, marginBottom: 12 }}>
-              <strong>Homologué jusqu'au :</strong> {selectedProduit.valable_jusquau}
+              <strong>HomologuÃ© jusqu'au :</strong> {selectedProduit.valable_jusquau}
             </div>
             {selectedProduit.frac_info && (
               <div style={{ background: C.creme, borderRadius: 10, padding: "10px 14px", marginBottom: 12 }}>
@@ -603,7 +603,7 @@ function OngletProduits() {
               </div>
             )}
             <div style={{ fontSize: 12, fontWeight: 700, color: C.texte, marginBottom: 8 }}>
-              Usages homologués ({selectedProduit.usages?.length})
+              Usages homologuÃ©s ({selectedProduit.usages?.length})
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 6, maxHeight: 300, overflowY: "auto" }}>
               {selectedProduit.usages?.map((u, i) => (
@@ -612,7 +612,7 @@ function OngletProduits() {
                   <div style={{ fontWeight: 600, color: C.texte }}>{u.culture}</div>
                   <div style={{ color: C.gris }}>{u.usage_desc}</div>
                   <div style={{ color: C.grisClair, marginTop: 2 }}>
-                    Dose : {u.dose || "—"} · DAR : {u.dar_jours != null ? u.dar_jours + "j" : "—"}
+                    Dose : {u.dose || "â€”"} Â· DAR : {u.dar_jours != null ? u.dar_jours + "j" : "â€”"}
                   </div>
                 </div>
               ))}
@@ -637,16 +637,16 @@ function PaginBtn({ children, disabled, onClick }) {
   );
 }
 
-// ── Onglet Historique ──────────────────────────────────────────────────────
+// â”€â”€ Onglet Historique â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function OngletHistorique({ historique, clearHistorique }) {
   const [selected, setSelected] = useState(null);
 
   if (historique.length === 0) {
     return (
       <div style={{ textAlign: "center", padding: 60, color: C.gris }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>📋</div>
+        <div style={{ fontSize: 48, marginBottom: 12 }}>ðŸ“‹</div>
         <div style={{ fontSize: 15 }}>
-          Aucun conseil généré dans cette session.<br />
+          Aucun conseil gÃ©nÃ©rÃ© dans cette session.<br />
           <span style={{ color: C.vertMid }}>Utilisez l'onglet Conseil pour commencer.</span>
         </div>
       </div>
@@ -688,7 +688,7 @@ function OngletHistorique({ historique, clearHistorique }) {
             </div>
             <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
               {item.groupe_frac && <Badge>FRAC {item.groupe_frac}</Badge>}
-              <span style={{ fontSize: 12, color: C.gris }}>DAR {item.dar ?? "—"}j</span>
+              <span style={{ fontSize: 12, color: C.gris }}>DAR {item.dar ?? "â€”"}j</span>
               <RisqueBadge valeur={item.risque_abeilles} />
             </div>
             {selected?.conseil_id === item.conseil_id && (
@@ -696,7 +696,7 @@ function OngletHistorique({ historique, clearHistorique }) {
                 {item.alertes?.map((a, j) => <Alerte key={j} texte={a} />)}
                 {item.rotation_note && (
                   <div style={{ fontSize: 12, color: C.ambre, marginTop: 8 }}>
-                    ↺ {item.rotation_note}
+                    â†º {item.rotation_note}
                   </div>
                 )}
               </div>
@@ -708,7 +708,7 @@ function OngletHistorique({ historique, clearHistorique }) {
   );
 }
 
-// ── Composants utilitaires ─────────────────────────────────────────────────
+// â”€â”€ Composants utilitaires â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function Label({ children }) {
   return (
     <div style={{ fontSize: 12, fontWeight: 600, color: C.gris,
@@ -724,7 +724,7 @@ const inputStyle = {
   fontFamily: "inherit",
 };
 
-// ── App principale ─────────────────────────────────────────────────────────
+// â”€â”€ App principale â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 export default function AgriSageApp() {
   const [onglet, setOnglet] = useState("conseil");
   const [historique, setHistorique] = useState([]);
